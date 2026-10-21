@@ -1,0 +1,43 @@
+# Lava Guard AC by FlameTeam Studios - Konfiguracja
+language: "PL" # Dostępne: PL, EN
+
+settings:
+  max-violations: 5 # Liczba wykroczeń przed automatycznym banem
+  ban-duration-days: 30
+
+checks:
+  fly:
+    enabled: true
+  speed:
+    enabled: true
+    max-speed: 0.75
+  reach:
+    enabled: true
+    max-distance: 3.6
+  fastbreak:
+    enabled: true
+    min-time-ms: 50
+
+messages:
+  PL:
+    prefix: "&8[&6LavaGuard&cAC&8] &r"
+    ban-broadcast: "&cGracz &e%player% &czostał zbanowany na &e30 dni &cza używanie Cheatów (&e%cheat%&c)!"
+    ban-reason: "&cLava Guard AC\n&7Wykryto niedozwolone modyfikacje: &e%cheat%\n&7Czas trwania: &e30 dni\n&8Created by FlameTeam Studios"
+    gui-title: "&8Panel Administratora - Wybierz gracza"
+    gui-punish-title: "&8Ukarz gracza: &c%player%"
+    gui-ban-item: "&cZbanuj na 30 dni (Cheaty)"
+    gui-kick-item: "&eWyrzuć gracza"
+    lang-changed: "&aJęzyk został zmieniony na: &ePolski"
+    reloaded: "&aKonfiguracja została przeładowana!"
+    no-permission: "&cNie masz uprawnień do tej komendy."
+  EN:
+    prefix: "&8[&6LavaGuard&cAC&8] &r"
+    ban-broadcast: "&cPlayer &e%player% &chas been banned for &e30 days &cfor using Cheats (&e%cheat%&c)!"
+    ban-reason: "&cLava Guard AC\n&7Unfair advantage detected: &e%cheat%\n&7Duration: &e30 days\n&8Created by FlameTeam Studios"
+    gui-title: "&8Admin Panel - Select Player"
+    gui-punish-title: "&8Punish player: &c%player%"
+    gui-ban-item: "&cBan for 30 days (Cheats)"
+    gui-kick-item: "&eKick player"
+    lang-changed: "&aLanguage changed to: &eEnglish"
+    reloaded: "&aConfiguration reloaded!"
+    no-permission: "&cYou do not have permission to use this command."
