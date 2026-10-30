@@ -1,9 +1,16 @@
-# Lava Guard AC by FlameTeam Studios - Konfiguracja
-language: "PL" # Dostępne: PL, EN
+language: "PL"
 
 settings:
-  max-violations: 5 # Liczba wykroczeń przed automatycznym banem
+  max-violations: 5
   ban-duration-days: 30
+
+discord:
+  enabled: false
+  webhook-url: "https://discord.com/api/webhooks/TWOJE_ID/TWOJ_TOKEN"
+
+update-checker:
+  enabled: true
+  modrinth-project: "lavaguardac"
 
 checks:
   fly:
@@ -14,14 +21,43 @@ checks:
   reach:
     enabled: true
     max-distance: 3.6
+  killaura:
+    enabled: true
+    min-dot-product: 0.55
+  hitbox:
+    enabled: true
+    max-expansion: 0.25
+  criticals:
+    enabled: true
+    min-fall-distance: 0.065
+  wallhit:
+    enabled: true
+    wall-buffer: 0.20
   fastbreak:
     enabled: true
     min-time-ms: 50
+  autototem:
+    enabled: true
+    min-time-ms: 100
+  autocrystal:
+    enabled: true
+    min-time-ms: 50
+  autoanchor:
+    enabled: true
+    min-time-ms: 50
+  scaffold:
+    enabled: true
+    min-pitch: 40.0
+    min-place-delay-ms: 65
+    max-rotation-snap: 75.0
+    max-sprint-bridges: 3
 
 messages:
   PL:
     prefix: "&8[&6LavaGuard&cAC&8] &r"
+    admin-alert: "&8[&c&l!&8] &cPotencjalny oszust: &e%player% &8| &cModuł: &e%cheat% &8(&c%vl%&8/&c%max%&8)"
     ban-broadcast: "&cGracz &e%player% &czostał zbanowany na &e30 dni &cza używanie Cheatów (&e%cheat%&c)!"
+    kick-broadcast: "&cGracz &e%player% &czostał wyrzucony z serwera przez administratora!"
     ban-reason: "&cLava Guard AC\n&7Wykryto niedozwolone modyfikacje: &e%cheat%\n&7Czas trwania: &e30 dni\n&8Created by FlameTeam Studios"
     gui-title: "&8Panel Administratora - Wybierz gracza"
     gui-punish-title: "&8Ukarz gracza: &c%player%"
@@ -30,9 +66,29 @@ messages:
     lang-changed: "&aJęzyk został zmieniony na: &ePolski"
     reloaded: "&aKonfiguracja została przeładowana!"
     no-permission: "&cNie masz uprawnień do tej komendy."
+    discord-embed-title: "🛡️ Lava Guard AC - Nowy Ban"
+    discord-field-player: "Gracz"
+    discord-field-reason: "Wykryte oszustwo"
+    discord-field-duration: "Czas trwania"
+    discord-duration-value: "%days% dni"
+    update-available: "&aDostępna jest nowa wersja &eLava Guard AC &8(&c%current% &7➡ &a%latest%&8)&a! Pobierz z Modrinth: &ehttps://modrinth.com/plugin/%project%"
+    player-not-found: "&cNie znaleziono gracza &e%player%&c!"
+    kb-applied: "&aNadano odrzut (Knockback) graczowi &e%player%&a."
+    hotbar-shuffled: "&aWymieszano pasek szybkiego dostępu gracza &e%player%&a."
+    admin-froze: "&aZamrożono gracza &e%player%&a."
+    admin-unfroze: "&aOdmrożono gracza &e%player%&a."
+    player-frozen: "&cZostałeś zamrożony przez administratora! Sprawdzanie..."
+    player-unfrozen: "&aZostałeś odmrożony. Dziękujemy za współpracę."
+    massban-added: "&aDodano gracza &e%player% &ado listy MassBan."
+    massban-empty: "&cLista MassBan jest pusta!"
+    massban-executed: "&cZbanowano &e%count% &cgraczy z listy MassBan!"
+    unban-success: "&aGracz &e%player% &czostał pomyślnie odbanowany!"
+    unban-not-banned: "&cGracz &e%player% &cnie jest obecnie zbanowany lub nie istnieje na liście banów!"
   EN:
     prefix: "&8[&6LavaGuard&cAC&8] &r"
+    admin-alert: "&8[&c&l!&8] &cPotential cheater: &e%player% &8| &cCheck: &e%cheat% &8(&c%vl%&8/&c%max%&8)"
     ban-broadcast: "&cPlayer &e%player% &chas been banned for &e30 days &cfor using Cheats (&e%cheat%&c)!"
+    kick-broadcast: "&cPlayer &e%player% &chas been kicked from the server by an admin!"
     ban-reason: "&cLava Guard AC\n&7Unfair advantage detected: &e%cheat%\n&7Duration: &e30 days\n&8Created by FlameTeam Studios"
     gui-title: "&8Admin Panel - Select Player"
     gui-punish-title: "&8Punish player: &c%player%"
@@ -41,3 +97,21 @@ messages:
     lang-changed: "&aLanguage changed to: &eEnglish"
     reloaded: "&aConfiguration reloaded!"
     no-permission: "&cYou do not have permission to use this command."
+    discord-embed-title: "🛡️ Lava Guard AC - New Ban"
+    discord-field-player: "Player"
+    discord-field-reason: "Detected Cheat"
+    discord-field-duration: "Duration"
+    discord-duration-value: "%days% days"
+    update-available: "&aA new version of &eLava Guard AC &ais available &8(&c%current% &7➡ &a%latest%&8)&a! Download at: &ehttps://modrinth.com/plugin/%project%"
+    player-not-found: "&cPlayer &e%player% &cnot found!"
+    kb-applied: "&aApplied knockback to &e%player%&a."
+    hotbar-shuffled: "&aShuffled hotbar for &e%player%&a."
+    admin-froze: "&aFroze player &e%player%&a."
+    admin-unfroze: "&aUnfroze player &e%player%&a."
+    player-frozen: "&cYou have been frozen by an admin! Do not log out."
+    player-unfrozen: "&aYou have been unfrozen. Thank you for your cooperation."
+    massban-added: "&aAdded &e%player% &ato the MassBan list."
+    massban-empty: "&cThe MassBan list is empty!"
+    massban-executed: "&cBanned &e%count% &cplayers from the MassBan list!"
+    unban-success: "&aPlayer &e%player% &chas been successfully unbanned!"
+    unban-not-banned: "&cPlayer &e%player% &cis not banned or does not exist in the ban list!"
