@@ -2,6 +2,7 @@ package com.flameteam.lavaguard;
 
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.time.Duration;
@@ -27,6 +28,20 @@ public class ViolationManager {
         violations.put(uuid, currentVl);
 
         int maxVl = plugin.getConfig().getInt("settings.max-violations", 5);
+
+        String alertMsg = plugin.getRawMsg("admin-alert")
+                .replace("%player%", player.getName())
+                .replace("%cheat%", cheatType)
+                .replace("%vl%", String.valueOf(currentVl))
+                .replace("%max%", String.valueOf(maxVl));
+
+        for (Player admin : Bukkit.getOnlinePlayers()) {
+            if (admin.hasPermission("lavaguard.admin") || admin.isOp()) {
+                admin.sendMessage(ChatColor.translateAlternateColorCodes('&', alertMsg));
+            }
+        }
+        plugin.getLogger().info("[ALERT] " + ChatColor.stripColor(alertMsg));
+
         if (currentVl >= maxVl) {
             punishPlayer(player, cheatType);
             violations.remove(uuid);
@@ -42,7 +57,6 @@ public class ViolationManager {
 
         Date expiration = new Date(System.currentTimeMillis() + Duration.ofDays(days).toMillis());
         
-        // Poprawione nadawanie bana po nazwie gracza (String)
         Bukkit.getBanList(BanList.Type.NAME).addBan(player.getName(), reason, expiration, "LavaGuardAC");
         
         Bukkit.getScheduler().runTask(plugin, () -> {
@@ -50,7 +64,6 @@ public class ViolationManager {
             Bukkit.broadcastMessage(broadcast);
         });
 
-        // Wysyłanie wiadomości Embed na Discorda
         plugin.getDiscordWebhook().sendBanEmbed(player.getName(), cheatType, days);
     }
 }

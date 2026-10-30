@@ -33,10 +33,9 @@ public class DiscordWebhook {
         String fieldPlayer = plugin.getConfig().getString("messages." + lang + ".discord-field-player", "Player");
         String fieldReason = plugin.getConfig().getString("messages." + lang + ".discord-field-reason", "Reason");
         String fieldDuration = plugin.getConfig().getString("messages." + lang + ".discord-field-duration", "Duration");
-        String durationVal = plugin.getConfig().getString("messages." + lang + ".discord-duration-value", "%days% days")
+        String durationVal = plugin.getConfig().getString("messages." + lang + ".discord-field-duration-value", "%days% days")
                 .replace("%days%", String.valueOf(days));
 
-        // Budowanie bezpiecznego ładunku JSON z wiadomością Embed i głową gracza z Mc-Heads
         String jsonPayload = """
                 {
                   "username": "Lava Guard AC",
@@ -80,7 +79,6 @@ public class DiscordWebhook {
                 Instant.now().toString()
         );
 
-        // Asynchroniczne wysyłanie zapytania HTTP poza głównym wątkiem serwera
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 HttpRequest request = HttpRequest.newBuilder()
@@ -91,7 +89,7 @@ public class DiscordWebhook {
 
                 httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             } catch (Exception e) {
-                plugin.getLogger().warning("Nie udało się wysłać powiadomienia na Discord: " + e.getMessage());
+                plugin.getLogger().warning("Blad wysylania powiadomienia na Discord: " + e.getMessage());
             }
         });
     }

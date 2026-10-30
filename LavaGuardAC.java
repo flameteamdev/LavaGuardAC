@@ -3,11 +3,18 @@ package com.flameteam.lavaguard;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 public class LavaGuardAC extends JavaPlugin {
 
     private static LavaGuardAC instance;
     private ViolationManager violationManager;
     private DiscordWebhook discordWebhook;
+    
+    private final Set<UUID> frozenPlayers = new HashSet<>();
+    private final Set<String> massBanList = new HashSet<>();
 
     @Override
     public void onEnable() {
@@ -17,8 +24,12 @@ public class LavaGuardAC extends JavaPlugin {
         this.discordWebhook = new DiscordWebhook(this);
         this.violationManager = new ViolationManager(this);
 
+        UpdateChecker updateChecker = new UpdateChecker(this);
+        updateChecker.checkForUpdates();
+
         getServer().getPluginManager().registerEvents(new CheckListeners(this), this);
         getServer().getPluginManager().registerEvents(new AdminGUI(this), this);
+        getServer().getPluginManager().registerEvents(updateChecker, this);
         getCommand("lavaguard").setExecutor(new LavaGuardCommand(this));
 
         getLogger().info("Lava Guard AC by FlameTeam Studios zostal pomyslnie zaladowany!");
@@ -34,6 +45,14 @@ public class LavaGuardAC extends JavaPlugin {
 
     public DiscordWebhook getDiscordWebhook() {
         return discordWebhook;
+    }
+
+    public Set<UUID> getFrozenPlayers() {
+        return frozenPlayers;
+    }
+
+    public Set<String> getMassBanList() {
+        return massBanList;
     }
 
     public String getMsg(String key) {

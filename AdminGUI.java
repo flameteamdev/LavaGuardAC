@@ -94,6 +94,8 @@ public class AdminGUI implements Listener {
                     admin.closeInventory();
                 } else if (clicked.getType() == Material.IRON_BOOTS) {
                     target.kickPlayer(ChatColor.RED + "Lava Guard AC - Kicked by Admin");
+                    String kickMsg = plugin.getMsg("kick-broadcast").replace("%player%", target.getName());
+                    Bukkit.broadcastMessage(kickMsg);
                     admin.closeInventory();
                 }
             }
