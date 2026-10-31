@@ -33,6 +33,12 @@ checks:
   wallhit:
     enabled: true
     wall-buffer: 0.20
+  antikb:
+    enabled: true
+  nofall:
+    enabled: true
+  hide-plugins:
+    enabled: true # Blokowanie /pl, /plugins, /about, /version
   fastbreak:
     enabled: true
     min-time-ms: 50
@@ -84,6 +90,9 @@ messages:
     massban-executed: "&cZbanowano &e%count% &cgraczy z listy MassBan!"
     unban-success: "&aGracz &e%player% &czostał pomyślnie odbanowany!"
     unban-not-banned: "&cGracz &e%player% &cnie jest obecnie zbanowany lub nie istnieje na liście banów!"
+    quit-frozen-broadcast: "&cGracz &e%player% &czostał zbanowany za wyjście podczas sprawdzania!"
+    quit-frozen-reason: "&cLava Guard AC\n&7Wyszedłeś z serwera podczas sprawdzania (Logout-Bypass)\n&7Czas trwania: &e30 dni\n&8Created by FlameTeam Studios"
+    unknown-command: "&fUnknown command. Type \"/help\" for help."
   EN:
     prefix: "&8[&6LavaGuard&cAC&8] &r"
     admin-alert: "&8[&c&l!&8] &cPotential cheater: &e%player% &8| &cCheck: &e%cheat% &8(&c%vl%&8/&c%max%&8)"
@@ -115,3 +124,6 @@ messages:
     massban-executed: "&cBanned &e%count% &cplayers from the MassBan list!"
     unban-success: "&aPlayer &e%player% &chas been successfully unbanned!"
     unban-not-banned: "&cPlayer &e%player% &cis not banned or does not exist in the ban list!"
+    quit-frozen-broadcast: "&cPlayer &e%player% &chas been banned for quitting while frozen!"
+    quit-frozen-reason: "&cLava Guard AC\n&7You quit the server while being frozen (Logout-Bypass)\n&7Duration: &e30 days\n&8Created by FlameTeam Studios"
+    unknown-command: "&fUnknown command. Type \"/help\" for help."
