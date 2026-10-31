@@ -1,5 +1,7 @@
 package com.flameteam.lavaguard;
 
+import org.bukkit.BanList;
+import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -18,16 +20,23 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityResurrectEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerCommandSendEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
+import java.time.Duration;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -37,6 +46,9 @@ public class CheckListeners implements Listener {
     private final Map<UUID, Long> lastBlockBreak = new HashMap<>();
     private final Map<UUID, Integer> airTicks = new HashMap<>();
     private final Map<UUID, Double> lastDeltaY = new HashMap<>();
+
+    private final Map<UUID, Double> pendingVelocityY = new HashMap<>();
+    private final Map<UUID, Integer> ticksSinceVelocity = new HashMap<>();
 
     private final Map<UUID, Long> lastTotemPop = new HashMap<>();
     private final Map<UUID, Long> lastCrystalPlace = new HashMap<>();
@@ -49,6 +61,95 @@ public class CheckListeners implements Listener {
 
     public CheckListeners(LavaGuardAC plugin) {
         this.plugin = plugin;
+    }
+
+    // --- UKRYWANIE PLUGINÓW (WYKONANIE KOMENDY) ---
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onCommandPreprocess(PlayerCommandPreprocessEvent event) {
+        if (!plugin.getConfig().getBoolean("checks.hide-plugins.enabled", true)) {
+            return;
+        }
+
+        Player p = event.getPlayer();
+        if (p.hasPermission("lavaguard.admin") || p.hasPermission("lavaguard.bypass")) {
+            return;
+        }
+
+        String message = event.getMessage().toLowerCase();
+        String[] args = message.split(" ");
+        String cmd = args[0].substring(1);
+
+        if (cmd.equals("pl") || cmd.equals("plugins") || cmd.equals("about") || 
+            cmd.equals("version") || cmd.equals("ver") || cmd.equals("?") || 
+            cmd.equals("icanhasbukkit") || cmd.startsWith("bukkit:") || cmd.startsWith("minecraft:")) {
+            
+            event.setCancelled(true);
+            p.sendMessage(plugin.getRawMsg("unknown-command"));
+        }
+    }
+
+    // --- UKRYWANIE PLUGINÓW (USUNIĘCIE Z TAB-COMPLETE) ---
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onTabComplete(PlayerCommandSendEvent event) {
+        if (!plugin.getConfig().getBoolean("checks.hide-plugins.enabled", true)) {
+            return;
+        }
+
+        Player p = event.getPlayer();
+        if (p.hasPermission("lavaguard.admin") || p.hasPermission("lavaguard.bypass")) {
+            return;
+        }
+
+        Iterator<String> iterator = event.getCommands().iterator();
+        while (iterator.hasNext()) {
+            String cmd = iterator.next().toLowerCase();
+            if (cmd.equals("pl") || cmd.equals("plugins") || cmd.equals("about") || 
+                cmd.equals("version") || cmd.equals("ver") || cmd.equals("?") || 
+                cmd.equals("icanhasbukkit") || cmd.contains(":")) {
+                iterator.remove();
+            }
+        }
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        Player p = event.getPlayer();
+        UUID uuid = p.getUniqueId();
+        
+        pendingVelocityY.remove(uuid);
+        ticksSinceVelocity.remove(uuid);
+
+        if (plugin.getFrozenPlayers().contains(uuid)) {
+            if (plugin.getConfig().getBoolean("settings.freeze-quit-ban", true)) {
+                plugin.getFrozenPlayers().remove(uuid);
+                
+                int days = plugin.getConfig().getInt("settings.ban-duration-days", 30);
+                String reason = plugin.getRawMsg("quit-frozen-reason");
+                String broadcast = plugin.getMsg("quit-frozen-broadcast").replace("%player%", p.getName());
+                
+                Date expiration = new Date(System.currentTimeMillis() + Duration.ofDays(days).toMillis());
+                
+                Bukkit.getBanList(BanList.Type.NAME).addBan(p.getName(), reason, expiration, "LavaGuardAC");
+                Bukkit.broadcastMessage(broadcast);
+                plugin.getDiscordWebhook().sendBanEmbed(p.getName(), "Logout Bypass (Freeze)", days);
+                
+                plugin.getPunishmentLogger().logPunishment(p.getName(), "BAN (Auto)", "Ucieczka (Freeze)", "LavaGuardAC");
+            } else {
+                plugin.getFrozenPlayers().remove(uuid);
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerVelocity(PlayerVelocityEvent event) {
+        Player p = event.getPlayer();
+        if (p.getGameMode() == GameMode.CREATIVE) return;
+
+        Vector v = event.getVelocity();
+        if (v.getY() > 0.2 && p.isOnGround()) {
+            pendingVelocityY.put(p.getUniqueId(), v.getY());
+            ticksSinceVelocity.put(p.getUniqueId(), 0);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -72,12 +173,56 @@ public class CheckListeners implements Listener {
         lastPitch.put(uuid, from.getPitch());
         lastYaw.put(uuid, from.getYaw());
 
-        if (from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ()) {
-            lastDeltaY.put(uuid, to.getY() - from.getY());
+        double dY = to.getY() - from.getY();
+        if (from.getX() != to.getX() || dY != 0 || from.getZ() != to.getZ()) {
+            lastDeltaY.put(uuid, dY);
         }
 
         if (p.getGameMode() == GameMode.CREATIVE || p.getGameMode() == GameMode.SPECTATOR || p.isFlying() || p.isGliding()) {
             return;
+        }
+
+        if (plugin.getConfig().getBoolean("checks.nofall.enabled", true)) {
+            if (dY < -0.1 && p.isOnGround() && !p.isSwimming() && !p.isInsideVehicle()) {
+                boolean isNearGround = false;
+                Location loc = to.clone();
+                
+                for (double x = -0.3; x <= 0.3; x += 0.3) {
+                    for (double z = -0.3; z <= 0.3; z += 0.3) {
+                        Material matBelow = loc.clone().add(x, -0.5, z).getBlock().getType();
+                        if (matBelow.isSolid() || matBelow == Material.WATER || matBelow == Material.LAVA || matBelow == Material.COBWEB) {
+                            isNearGround = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!isNearGround) {
+                    plugin.getViolationManager().addViolation(p, "NoFall (Packet Spoof)");
+                }
+            }
+        }
+
+        if (plugin.getConfig().getBoolean("checks.antikb.enabled", true)) {
+            if (pendingVelocityY.containsKey(uuid)) {
+                int ticks = ticksSinceVelocity.getOrDefault(uuid, 0) + 1;
+                ticksSinceVelocity.put(uuid, ticks);
+
+                if (dY > 0.0) {
+                    pendingVelocityY.remove(uuid);
+                    ticksSinceVelocity.remove(uuid);
+                } else if (ticks > 5) {
+                    Block blockAbove = to.clone().add(0, 2, 0).getBlock();
+                    boolean isBlocked = blockAbove.getType().isSolid() || p.isSwimming() || to.getBlock().getType() == Material.COBWEB;
+
+                    if (!isBlocked) {
+                        plugin.getViolationManager().addViolation(p, "Anti-Knockback / Velocity");
+                    }
+                    
+                    pendingVelocityY.remove(uuid);
+                    ticksSinceVelocity.remove(uuid);
+                }
+            }
         }
 
         if (plugin.getConfig().getBoolean("checks.speed.enabled", true)) {

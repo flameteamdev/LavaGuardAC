@@ -12,6 +12,7 @@ public class LavaGuardAC extends JavaPlugin {
     private static LavaGuardAC instance;
     private ViolationManager violationManager;
     private DiscordWebhook discordWebhook;
+    private PunishmentLogger punishmentLogger;
     
     private final Set<UUID> frozenPlayers = new HashSet<>();
     private final Set<String> massBanList = new HashSet<>();
@@ -21,6 +22,7 @@ public class LavaGuardAC extends JavaPlugin {
         instance = this;
         saveDefaultConfig();
 
+        this.punishmentLogger = new PunishmentLogger(this); // Inicjalizacja loggera
         this.discordWebhook = new DiscordWebhook(this);
         this.violationManager = new ViolationManager(this);
 
@@ -45,6 +47,10 @@ public class LavaGuardAC extends JavaPlugin {
 
     public DiscordWebhook getDiscordWebhook() {
         return discordWebhook;
+    }
+
+    public PunishmentLogger getPunishmentLogger() {
+        return punishmentLogger;
     }
 
     public Set<UUID> getFrozenPlayers() {

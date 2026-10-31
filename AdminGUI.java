@@ -91,11 +91,13 @@ public class AdminGUI implements Listener {
             if (target != null) {
                 if (clicked.getType() == Material.ANVIL) {
                     plugin.getViolationManager().punishPlayer(target, "Manual Admin Ban");
+                    plugin.getPunishmentLogger().logPunishment(target.getName(), "BAN (GUI)", "Cheaty", admin.getName());
                     admin.closeInventory();
                 } else if (clicked.getType() == Material.IRON_BOOTS) {
                     target.kickPlayer(ChatColor.RED + "Lava Guard AC - Kicked by Admin");
                     String kickMsg = plugin.getMsg("kick-broadcast").replace("%player%", target.getName());
                     Bukkit.broadcastMessage(kickMsg);
+                    plugin.getPunishmentLogger().logPunishment(target.getName(), "KICK (GUI)", "Wyrzucenie", admin.getName());
                     admin.closeInventory();
                 }
             }

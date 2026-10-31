@@ -64,6 +64,8 @@ public class ViolationManager {
             Bukkit.broadcastMessage(broadcast);
         });
 
+        // Wysyłanie na Discord oraz wpis do pliku logs.txt
         plugin.getDiscordWebhook().sendBanEmbed(player.getName(), cheatType, days);
+        plugin.getPunishmentLogger().logPunishment(player.getName(), "BAN", cheatType, "LavaGuardAC (Automat)");
     }
 }

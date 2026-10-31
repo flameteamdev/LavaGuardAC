@@ -64,6 +64,7 @@ public class LavaGuardCommand implements CommandExecutor {
             if (banList.isBanned(targetName)) {
                 banList.pardon(targetName);
                 sender.sendMessage(plugin.getMsg("unban-success").replace("%player%", targetName));
+                plugin.getPunishmentLogger().logPunishment(targetName, "UNBAN", "Brak powodu", sender.getName());
             } else {
                 sender.sendMessage(plugin.getMsg("unban-not-banned").replace("%player%", targetName));
             }
@@ -147,6 +148,8 @@ public class LavaGuardCommand implements CommandExecutor {
                         Date expiration = new Date(System.currentTimeMillis() + Duration.ofDays(days).toMillis());
                         Bukkit.getBanList(BanList.Type.NAME).addBan(name, reason, expiration, "LavaGuardAC");
                         plugin.getDiscordWebhook().sendBanEmbed(name, "MassBan (Offline)", days);
+                        
+                        plugin.getPunishmentLogger().logPunishment(name, "BAN (Offline)", "MassBan", sender.getName());
                     }
                 }
                 sender.sendMessage(plugin.getMsg("massban-executed").replace("%count%", String.valueOf(count)));
